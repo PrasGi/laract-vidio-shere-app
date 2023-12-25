@@ -8,10 +8,5 @@ use Illuminate\Database\Eloquent\Model;
 class Vidio extends Model
 {
     use HasFactory;
-    protected $fillable = [
-        'title',
-        'description',
-        'url_vidio',
-        'user_id',
-    ];
+    protected $guarded = ['id'];
 }

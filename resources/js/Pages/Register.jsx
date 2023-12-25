@@ -10,7 +10,7 @@ export default function Register({ login_url_form, register_url }) {
         password: "",
     });
 
-    const [errorMessage, setErrorMessage] = useState(null);
+    const [errorMessage, setErrorMessage] = useState();
 
     const handleChange = (event) => {
         const { name, value } = event.target;
@@ -23,35 +23,32 @@ export default function Register({ login_url_form, register_url }) {
     const handleRegister = async (event) => {
         event.preventDefault();
 
-        try {
-            const response = await fetch(register_url, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": csrfToken,
-                },
-                body: JSON.stringify(formData),
-            });
-            const responseData = await response.json();
-            console.log(responseData);
-            if (responseData.status_code == 200) {
-                // Redirect to / on successful registration
-                window.location.href = "/";
+        const response = await fetch(register_url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": csrfToken,
+            },
+            body: JSON.stringify(formData),
+        });
+        const responseData = await response.json();
+        if (responseData.status_code == 200) {
+            window.location.href = "/";
+        } else {
+            let error = "";
+            // Memeriksa apakah 'message' adalah objek
+            if (typeof responseData.message === "object") {
+                for (const key in responseData.message) {
+                    if (responseData.message.hasOwnProperty(key)) {
+                        for (const i in responseData.message[key]) {
+                            error += responseData.message[key][i] + "<br>";
+                        }
+                    }
+                }
             } else {
-                // Handle registration failure
-                error = "";
-                responseData.message.map((m) => {
-                    error += (
-                        <div className="alert alert-warning" role="alert">
-                            {m[0]}
-                        </div>
-                    );
-                });
-                setErrorMessage(error);
+                error = responseData.message;
             }
-        } catch (error) {
-            console.error("Error during registration:", error);
-            setErrorMessage("An unexpected error occurred. Please try again.");
+            setErrorMessage(error);
         }
     };
 
@@ -78,27 +75,28 @@ export default function Register({ login_url_form, register_url }) {
                                 alt="Sample image"
                             />
                         </div>
-                        <div className="col-md-8 col-lg-6 col-xl-4">
+                        <div className="col-md-8 col-lg-6 col-xl-4 shadow-lg p-4 rounded-4">
                             {errorMessage && (
                                 <div
                                     className="alert alert-warning"
                                     role="alert"
-                                >
-                                    {errorMessage}
-                                </div>
+                                    dangerouslySetInnerHTML={{
+                                        __html: errorMessage,
+                                    }}
+                                ></div>
                             )}
                             <form
                                 action={register_url}
                                 method="post"
                                 onSubmit={handleRegister}
                             >
-                                <div className="d-flex flex-row align-items-center justify-content-center justify-content-lg-start mb-4">
-                                    <p className="lead fw-normal mb-0 me-3">
-                                        Register
-                                    </p>
-                                </div>
-
                                 <div className="form-outline mb-4">
+                                    <label
+                                        className="form-label"
+                                        htmlFor="form3Example3"
+                                    >
+                                        Name
+                                    </label>
                                     <input
                                         type="text"
                                         id="form3Example3"
@@ -109,15 +107,15 @@ export default function Register({ login_url_form, register_url }) {
                                         onChange={handleChange}
                                         required
                                     />
+                                </div>
+
+                                <div className="form-outline mb-4">
                                     <label
                                         className="form-label"
                                         htmlFor="form3Example3"
                                     >
-                                        Name
+                                        Email
                                     </label>
-                                </div>
-
-                                <div className="form-outline mb-4">
                                     <input
                                         type="email"
                                         id="form3Example3"
@@ -128,15 +126,15 @@ export default function Register({ login_url_form, register_url }) {
                                         onChange={handleChange}
                                         required
                                     />
-                                    <label
-                                        className="form-label"
-                                        htmlFor="form3Example3"
-                                    >
-                                        Email
-                                    </label>
                                 </div>
 
                                 <div className="form-outline mb-3">
+                                    <label
+                                        className="form-label"
+                                        htmlFor="form3Example4"
+                                    >
+                                        Password
+                                    </label>
                                     <input
                                         type="password"
                                         id="form3Example4"
@@ -147,20 +145,14 @@ export default function Register({ login_url_form, register_url }) {
                                         onChange={handleChange}
                                         required
                                     />
-                                    <label
-                                        className="form-label"
-                                        htmlFor="form3Example4"
-                                    >
-                                        Password
-                                    </label>
                                 </div>
-                                <div>
+                                <div className="text-center">
                                     <p>
                                         Already have an account? {""}
                                         <a href={login_url_form}>Login</a>
                                     </p>
                                 </div>
-                                <div className="text-center text-lg-start">
+                                <div className="text-center text-lg-center">
                                     <button
                                         type="submit"
                                         className="btn btn-primary btn-lg"

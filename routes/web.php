@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\ApiLocal\UserApiController;
+use App\Http\Controllers\ApiLocal\VidioApiLocalController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\VidioController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -17,8 +19,20 @@ use Inertia\Inertia;
 */
 
 Route::middleware('auth')->group(function () {
+    Route::get('/logout', [UserApiController::class, 'logout'])->name('logout.api');
+
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/vidios', [VidioController::class, 'index'])->name('vidios');
+
+    // * API LOCAL Vidio * //
+    Route::prefix('data')->group(function () {
+        Route::get('/vidios', [VidioApiLocalController::class, 'index'])->name('vidios.index.api');
+        Route::post('/vidios', [VidioApiLocalController::class, 'store'])->name('vidios.store.api');
+        Route::delete('/vidios/{vidio}', [VidioApiLocalController::class, 'destroy'])->name('vidios.destroy.api');
+    });
 });
+
+// * API LOCAL Auth * //
 
 Route::get('/login', [UserApiController::class, 'loginForm'])->name('login.page');
 Route::get('/register', [UserApiController::class, 'registerForm'])->name('register.page');

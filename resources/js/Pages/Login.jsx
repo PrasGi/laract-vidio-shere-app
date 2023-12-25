@@ -1,6 +1,63 @@
-import React from "react";
+import React, { useState } from "react";
 
-export default function Login({ register_url_form, login_url }) {
+export default function Login(props) {
+    const csrfToken = document.head.querySelector(
+        'meta[name="csrf-token"]'
+    ).content;
+
+    const [errorMessage, setErrorMessage] = useState(null);
+
+    const [formData, setFormData] = useState({
+        email: "",
+        password: "",
+    });
+
+    const handleChange = (event) => {
+        const { name, value } = event.target;
+        setFormData({
+            ...formData,
+            [name]: value,
+        });
+    };
+
+    const handleLogin = async (event) => {
+        event.preventDefault();
+
+        try {
+            const response = await fetch(props.login_url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": csrfToken,
+                },
+                body: JSON.stringify(formData),
+            });
+            const responseData = await response.json();
+            console.log(responseData);
+            if (responseData.status_code == 200) {
+                // Redirect to / on successful registration
+                window.location.href = "/";
+            } else {
+                let error = "";
+                // Memeriksa apakah 'message' adalah objek
+                if (typeof responseData.message === "object") {
+                    for (const key in responseData.message) {
+                        if (responseData.message.hasOwnProperty(key)) {
+                            for (const i in responseData.message[key]) {
+                                error += responseData.message[key][i] + "<br>";
+                            }
+                        }
+                    }
+                } else {
+                    error = responseData.message;
+                }
+                setErrorMessage(error);
+            }
+        } catch (error) {
+            setErrorMessage("An unexpected error occurred. Please try again.");
+        }
+    };
+
     return (
         <>
             <section
@@ -24,54 +81,63 @@ export default function Login({ register_url_form, login_url }) {
                                 alt="Sample image"
                             />
                         </div>
-                        <div className="col-md-8 col-lg-6 col-xl-4">
-                            <form action={login_url} method="post">
-                                <div className="d-flex flex-row align-items-center justify-content-center justify-content-lg-start mb-4">
-                                    <p className="lead fw-normal mb-0 me-3">
-                                        Sign in
-                                    </p>
-                                </div>
-
+                        <div className="col-md-8 col-lg-6 col-xl-4 shadow-lg p-4 rounded-4">
+                            {errorMessage && (
+                                <div
+                                    className="alert alert-warning"
+                                    role="alert"
+                                    dangerouslySetInnerHTML={{
+                                        __html: errorMessage,
+                                    }}
+                                ></div>
+                            )}
+                            <form method="post" onSubmit={handleLogin}>
                                 <div className="form-outline mb-4">
-                                    <input
-                                        type="text"
-                                        id="form3Example3"
-                                        className="form-control form-control-lg"
-                                        placeholder="Enter a valid username"
-                                        name="email"
-                                        required
-                                    />
                                     <label
                                         className="form-label"
                                         htmlFor="form3Example3"
                                     >
                                         Email
                                     </label>
+                                    <input
+                                        type="text"
+                                        id="form3Example3"
+                                        className="form-control form-control-lg"
+                                        placeholder="Enter a valid username"
+                                        name="email"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        required
+                                    />
                                 </div>
 
                                 <div className="form-outline mb-3">
-                                    <input
-                                        type="password"
-                                        id="form3Example4"
-                                        className="form-control form-control-lg"
-                                        placeholder="Enter password"
-                                        name="password"
-                                        required
-                                    />
                                     <label
                                         className="form-label"
                                         htmlFor="form3Example4"
                                     >
                                         Password
                                     </label>
+                                    <input
+                                        type="password"
+                                        id="form3Example4"
+                                        className="form-control form-control-lg"
+                                        placeholder="Enter password"
+                                        name="password"
+                                        value={formData.password}
+                                        onChange={handleChange}
+                                        required
+                                    />
                                 </div>
-                                <div>
+                                <div className="text-center">
                                     <p>
                                         Don't have account? {""}
-                                        <a href={register_url_form}>Register</a>
+                                        <a href={props.register_url_form}>
+                                            Register
+                                        </a>
                                     </p>
                                 </div>
-                                <div className="text-center text-lg-start">
+                                <div className="text-center text-lg-center">
                                     <button
                                         type="submit"
                                         className="btn btn-primary btn-lg"

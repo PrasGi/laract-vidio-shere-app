@@ -11,7 +11,11 @@ class DashboardController extends Controller
     public function index()
     {
         return Inertia::render('Dashboard', [
-            'value' => Auth::user()->name
+            'url' => [
+                'store' => route('vidios.store.api'),
+                'index' => route('vidios.index.api'),
+                'app_url' => env('APP_URL'),
+            ]
         ]);
     }
 }

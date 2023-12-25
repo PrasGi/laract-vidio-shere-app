@@ -19,6 +19,7 @@
 
     <!-- Template Main CSS File -->
     <link href="{{ asset('assets/css/style.css') }}" rel="stylesheet">
+
     @vite('resources/js/app.jsx')
     @inertiaHead
 </head>
