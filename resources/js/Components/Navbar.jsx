@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "@inertiajs/react";
 
 export default function Navbar() {
     return (
@@ -16,9 +17,9 @@ export default function Navbar() {
             </div>
 
             <nav className="header-nav ms-auto p-5">
-                <a href="./logout" className="btn btn-outline-danger">
+                <Link href="/logout" className="btn btn-outline-danger">
                     <i className="bi bi-box-arrow-left"></i> Logout
-                </a>
+                </Link>
             </nav>
         </header>
     );

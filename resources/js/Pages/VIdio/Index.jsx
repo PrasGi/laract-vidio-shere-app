@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../../Components/Navbar";
 import Sidebar from "../../Components/Sidebar";
+import CardThumbnail from "../../Components/CardThumbnail";
+import EmptyVidio from "../../Components/EmptyVidio";
 
 export default function Index(props) {
     const csrfToken = document.head.querySelector(
@@ -22,6 +24,7 @@ export default function Index(props) {
     }, []);
 
     const [vidio, setVidio] = useState("");
+    const [thumbnail, setThumbnail] = useState("");
 
     const handleChange = (event) => {
         const { name, value } = event.target;
@@ -34,6 +37,9 @@ export default function Index(props) {
     const handleChangeVidio = (event) => {
         setVidio(event.target.files[0]);
     };
+    const handleChangeThumbnail = (event) => {
+        setThumbnail(event.target.files[0]);
+    };
 
     const handleStore = async (event) => {
         event.preventDefault();
@@ -43,6 +49,7 @@ export default function Index(props) {
             formDataSubmit.append("title", formData.title);
             formDataSubmit.append("description", formData.description);
             formDataSubmit.append("vidio", vidio); // Assuming you have an input element for file selection
+            formDataSubmit.append("thumbnail", thumbnail); // Assuming you have an input element for file selection
 
             const response = await fetch(props.url.store, {
                 method: "POST",
@@ -78,10 +85,9 @@ export default function Index(props) {
         }
     };
 
-    async function handleDestroy(id) {
-        console.log("tes");
+    const handleDestroy = async (id) => {
         try {
-            const response = await fetch(`./vidios/${id}`, {
+            const response = await fetch(`./data/vidios/${id}`, {
                 method: "DELETE",
                 headers: {
                     "X-CSRF-TOKEN": csrfToken,
@@ -112,7 +118,7 @@ export default function Index(props) {
         } catch (error) {
             setErrorMessage("An unexpected error occurred. " + error.message);
         }
-    }
+    };
 
     const getData = async () => {
         try {
@@ -141,9 +147,9 @@ export default function Index(props) {
             <Navbar></Navbar>
             <Sidebar></Sidebar>
             <main className="main" id="main">
-                <div className="text-center shadow p-3">
+                <div className="text-start p-3">
                     <button
-                        className="btn btn-primary"
+                        className="btn btn-outline-dark"
                         data-bs-toggle="modal"
                         data-bs-target="#modalAddVidio"
                         onClick={() => {
@@ -151,19 +157,23 @@ export default function Index(props) {
                             setSuccessMessage(null); // Menghapus pesan keberhasilan saat membuka modal
                         }}
                     >
-                        <i className="bi bi-upload"></i> Add new vidio
+                        <i className="bi bi-plus"></i> Add vidio
                     </button>
                 </div>
-                <div className="row mt-3 justify-content-start">
+                <div className="row mt-1 justify-content-start">
                     {datas ? (
                         datas.map((data) => (
                             <div className="col-6 p-4 shadow" key={data.id}>
-                                <Card data={data} url={props.url.app_url} />
+                                <CardThumbnail
+                                    data={data}
+                                    handleDestroy={handleDestroy}
+                                    url={props.url.app_url}
+                                />
                             </div>
                         ))
                     ) : (
                         <div className="text-center">
-                            <Empty />
+                            <EmptyVidio />
                         </div>
                     )}
                 </div>
@@ -258,6 +268,20 @@ export default function Index(props) {
                                         onChange={handleChangeVidio}
                                     />
                                 </div>
+                                <div className="mb-3">
+                                    <label
+                                        htmlFor="vidio"
+                                        className="form-label"
+                                    >
+                                        File thumbnail
+                                    </label>
+                                    <input
+                                        className="form-control"
+                                        type="file"
+                                        id="thumbnail"
+                                        onChange={handleChangeThumbnail}
+                                    />
+                                </div>
                             </div>
                             <div className="modal-footer">
                                 <button
@@ -274,40 +298,4 @@ export default function Index(props) {
             </div>
         </>
     );
-}
-
-function Card({ data }) {
-    return (
-        <>
-            <div className="ratio ratio-16x9">
-                <iframe
-                    src={`${data.vidio}`}
-                    title={`${data.title}`}
-                    allowFullScreen
-                    webkitallowfullscreen="true"
-                    mozallowfullscreen="true"
-                ></iframe>
-            </div>
-            <div className="row">
-                <div className="col-8">
-                    <h5 className="card-title">{data.title}</h5>
-                    <p className="card-text">{data.description}</p>
-                </div>
-                <div className="col-4">
-                    <div className="mt-3 text-end">
-                        <a
-                            className="btn btn-danger"
-                            onClick={() => handleDestroy(data.id)}
-                        >
-                            Delete
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </>
-    );
-}
-
-function Empty() {
-    return <p>Empty vidios</p>;
 }

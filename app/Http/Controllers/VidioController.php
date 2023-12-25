@@ -17,8 +17,20 @@ class VidioController extends Controller
 
     public function index()
     {
-        $datas = $this->vidioModel->all();
         return Inertia::render('Vidio/Index', [
+            'url' => [
+                'store' => route('vidios.store.api'),
+                'index' => route('vidios.index.api'),
+                'app_url' => env('APP_URL'),
+            ]
+        ]);
+    }
+
+    public function show(Vidio $vidio)
+    {
+        $vidio = $this->vidioModel->where('id', $vidio->id)->with('user')->first();
+        return Inertia::render('Vidio/Detail', [
+            'data' => $vidio,
             'url' => [
                 'store' => route('vidios.store.api'),
                 'index' => route('vidios.index.api'),

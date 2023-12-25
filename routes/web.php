@@ -18,11 +18,12 @@ use Inertia\Inertia;
 |
 */
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::get('/logout', [UserApiController::class, 'logout'])->name('logout.api');
 
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/vidios', [VidioController::class, 'index'])->name('vidios');
+    Route::get('/vidios', [VidioController::class, 'index'])->name('vidios.index');
+    Route::get('/vidios/{vidio}', [VidioController::class, 'show'])->name('vidios.show');
 
     // * API LOCAL Vidio * //
     Route::prefix('data')->group(function () {

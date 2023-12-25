@@ -10,16 +10,35 @@ use Illuminate\Support\Facades\Validator;
 class VidioApiLocalController extends Controller
 {
 
+    private $vidioModel;
+
+    public function __construct()
+    {
+        $this->vidioModel = new Vidio();
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
+        $datas = $this->vidioModel;
+
         if ($request->has('byUser')) {
-            $datas = Vidio::where('user_id', auth()->user()->id)->orderByDesc("id")->get();
+            $datas = $datas->where('user_id', auth()->user()->id)->orderByDesc("id")->with('user');
         } else {
-            $datas = Vidio::orderByDesc("id")->get();
+            $datas = $datas->orderByDesc("id")->with('user');
         }
+
+        if ($request->has('search')) {
+            $datas = $datas->where('title', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->has('user_id')) {
+            $datas = $datas->where('user_id', $request->user_id);
+        }
+
+        $datas = $datas->get();
         return response()->json([
             'status_code' => 200,
             'message' => 'success get all vidios',
@@ -40,11 +59,12 @@ class VidioApiLocalController extends Controller
      */
     public function store(Request $request)
     {
-        $payload = $request->only(['title', 'description', 'vidio']);
+        $payload = $request->only(['title', 'description', 'vidio', 'thumbnail']);
         $validate = Validator::make($payload, [
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'vidio' => 'required|file|mimes:mp4,mov,ogg,qt',
+            'thumbnail' => 'required|file|mimes:jpg,jpeg,png',
         ]);
 
         if ($validate->fails()) {
@@ -55,6 +75,7 @@ class VidioApiLocalController extends Controller
         }
 
         $payload['vidio'] = env('APP_URL') . '/storage/' . $request->file('vidio')->store('vidios');
+        $payload['thumbnail'] = env('APP_URL') . '/storage/' . $request->file('thumbnail')->store('thumbnails');
         $payload['user_id'] = auth()->user()->id;
 
         if ($vidio = Vidio::create($payload)) {
